@@ -8,8 +8,8 @@ from strformat import fmt, `&`
 const
   goalWeight = 50000   # mass in grams
   nRats = 10           # max number of rats
-  initMinWeight = 200  # min initial mass in grams
-  initMaxWeight = 600  # max initial mass in grams
+  initMinWeight = 200.0  # min initial mass in grams
+  initMaxWeight = 600.0  # max initial mass in grams
   pMutation = 0.01     # probability of mutation occurring during breeding
   modMinMutation = 0.5 # modifier of least beneficial mutation
   modMaxMutation = 1.2 # modifier of most beneficiial mutation
@@ -26,17 +26,31 @@ type
     weight: float
     gender: string
 
+proc triangular(left, right: float) : float =
+  let
+    m = left + (right-left)/2
+    x = rand(1.0) * (right-left) + left
+
+    p = if left <= x and x <= m:
+         2*(x-left)/((right-left)*(m-left))
+        elif m <= x and x <= right:
+         2*(right-x)/((right-left)*(right-m))
+        else: 0.0
+
+  # TODO: Generate weight from `p`
+  result = 0.0
 # get all weights of the rat population
 proc getWeights(rats: seq[Rat]): seq[float] =
   rats.map(r => r.weight)
 
 # Get a random weight between global min, max weights
 proc randomWeight(): float =
-  rand(1.0) * (initMaxWeight - initMinWeight) + initMinWeight
+  triangular(initMinWeight, initMaxWeight)
 
 # Get a random weight between the max and min values
-proc randomWeight(mn, mx: float): float =
-  rand(1.0) * (mx - mn) + mn
+proc randomWeight(first, second: float): float =
+  triangular(min(first, second),
+             max(first, second))
 
 
 # Get a random gender - Male or Female
